@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST B2B INVOICE PORTAL</title>
+
+    <style>
+        :root {
+            --portal-blue: #003366;
+            --accent-blue: #00a8ff;
+            --sidebar-bg: #ffffff;
+            --main-bg: #f0f2f5;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--main-bg); color: #333; }
+        
+        /* HEADER STYLE */
+        header { 
+            background-color: var(--portal-blue); 
+            color: white; 
+            padding: 15px 5%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .header-title h1 { margin: 0; font-size: 20px; }
+        .nav-links button { 
+            background: transparent; 
+            color: white; 
+            border: 1px solid white; 
+            padding: 6px 15px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin-left: 10px;
+        }
+
+        .wrapper { display:flex; min-height:90vh; }
+
+        .sidebar {
+         width:260px;
+        background:white;
+        border-right:1px solid #ddd;
+        padding:20px 0;
+        }
+
+        .sidebar ul {
+             list-style:none; 
+            padding:0;
+           }
+
+        .sidebar li {
+        padding:12px 25px;
+        cursor:pointer;
+        border-bottom:1px solid #f0f0f0;
+        }
+
+        .main-content {
+        flex-grow:1;
+        padding:40px;
+        display:flex;
+        justify-content:center;
+        }
+
+    .page-container {
+        background:white;
+         padding:30px;
+         border-radius:8px;
+         box-shadow:0 4px 12px rgba(0,0,0,0.1);
+         width:100%;
+         max-width:800px;
+        }
+
+     .hidden { display:none; }
+
+ 
+
+        /* DASHBOARD CARDS */
+        .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            text-align: center; 
+            border-top: 4px solid var(--portal-blue); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .card h3 { margin: 10px 0; color: var(--portal-blue); }
+        .card p { margin: 0; font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase; }
+
+        /* FORM STYLING */
+        .form-row { display: flex; margin-bottom: 15px; align-items: center; }
+        .form-row label { width: 200px; font-weight: 600; font-size: 14px; }
+        .form-row input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-action { 
+            background: #337ab7; 
+            color: white; 
+            border: none; 
+            padding: 12px 25px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        .btn-post { float: right; }
+        .search-wrapper {
+    display: flex;
+    max-width: 500px;
+    margin: 15px auto;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+#service-search {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    font-size: 14px;
+    outline: none;
+}
+
+</style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <h1>GST B2B INVOICE</h1>
+            <small>Government Services Portal</small>
+        </div>
+        <div class="nav-links">
+            <button onclick="location.reload()">Home</button>
+            <button id="logout-btn" class="hidden" onclick="location.reload()">Logout</button>
+        </div>
+    </header>
+     
+    <div class="wrapper">
+        <aside id="sidebar-nav" class="sidebar hidden">
+            <div style="padding: 0 25px 10px; font-size: 12px; color: #888; font-weight: bold;">SERVICES</div>
+            <ul id="menuList">
+>
+                <li onclick="showPage('dashboard-page')">Dashboard</li>
+                <li onclick="showPage('invoice-form-page')">Create New Invoice</li>
+                <li>Money and Taxes</li>
+                <li>Download Reports</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+
+            <div id="home-page" class="page-container" style="text-align: center;">
+                <h2>Welcome to GST Portal</h2>
+                <p>Select your role to register and access your dashboard</p>
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+                    <div onclick="selectRole('Seller')" style="border: 2px solid #ddd; padding: 30px; border-radius: 10px; cursor: pointer; width: 120px;">
+                        <span style="font-size: 40px;">🏢</span><br><strong>SELLER</strong>
+                    </div>
+                    <div onclick="selectRole('Buyer')" style="border: 2px solid #ddd; padding: 30px; border-radius: 10px; cursor: pointer; width: 120px;">
+                        <span style="font-size: 40px;">🛒</span><br><strong>BUYER</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div id="register-page" class="page-container hidden">
+                <h2 id="reg-heading">Register</h2>
+                <div class="form-row">
+                <label>Full Name</label>
+                <input type="text" id="reg_name" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="Letters only">
+                </div>
+
+                <div class="form-row">
+                <label>Email Address</label>
+                <input type="email" id="reg_email" oninput="this.value = this.value.toLowerCase()" onblur="if(this.value && !this.value.endsWith('@gmail.com')){ alert('Only @gmail.com allowed'); this.value=''; }" placeholder="lowercase @gmail.com">
+                </div>
+                
+
+            <div id="invoice-form-page" class="page-container hidden">
+                <h3 style="color:#337ab7; margin-top:0;">Register for GST Online - New Invoice</h3>
+                <hr style="margin-bottom: 20px; border: 0; border-top: 1px solid #eee;">
+                <div class="form-row">
+                <label>Seller GSTIN</label>
+                <input type="text" id="inv_s_gstin" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Numbers only">
+                 </div>
+                 <div class="form-row">
+                <label>Buyer GSTIN</label>
+                <input type="text" id="inv_b_gstin" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Numbers only">
+                </div>
+                
+                <div class="form-row">
+                <label>Invoice Number</label>
+                <input type="text" id="inv_num" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Numbers only">
+                 </div>
+                <div class="form-row"><label>Invoice Date</label><input type="date" id="inv_date"></div>
+                <div class="form-row"><label>Taxable Value</label><input type="number" id="inv_taxable" oninput="calculateGst()"></div>
+                <div class="form-row"><label>Gst Value (18%)</label><input type="number" id="inv_gst" readonly style="background:#f9f9f9;"></div>
+                <div class="form-row"><label>Total Value</label><input type="number" id="inv_total" readonly style="background:#f9f9f9;"></div>
+                <div class="form-row"><label>Status</label><input type="text" value="Active" id="inv_status"></div>
+                <button class="btn-action btn-post" onclick="postInvoice()">POST</button>
+            </div>
+
+            <div id="dashboard-page" class="page-container hidden">
+                <h2 id="dash-title">Dashboard</h2>
+                <div class="dash-grid">
+                    <div class="card">
+                        <p>Total Invoices</p>
+                        <h3 id="stat-count">0</h3>
+                    </div>
+                    <div class="card" style="border-top-color: #27ae60;">
+                        <p>Total Value</p>
+                        <h3 id="stat-total">₹ 0.00</h3>
+                    </div>
+                    <div class="card" style="border-top-color: #e67e22;">
+                        <p>GST Value</p>
+                        <h3 id="stat-gst">₹ 0.00</h3>
+                    </div>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid var(--portal-blue);">
+                    <h4 style="margin: 0 0 10px;">User Profile</h4>
+                    <p><strong>Name:</strong> <span id="view-name"></span></p>
+                    <p><strong>ID Number:</strong> <span id="view-id"></span></p>
+                    <p><strong>Location:</strong> <span id="view-loc"></span></p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000/api/invoices/";
+        let selectedRole = "";
+
+        function showPage(pageId) {
+            // Hide all pages
+            document.getElementById('home-page').classList.add('hidden');
+            document.getElementById('register-page').classList.add('hidden');
+            document.getElementById('invoice-form-page').classList.add('hidden');
+            document.getElementById('dashboard-page').classList.add('hidden');
+            
+            // Show selected page
+            document.getElementById(pageId).classList.remove('hidden');
+
+            // Toggle Sidebar and Logout
+            const isInside = (pageId === 'dashboard-page' || pageId === 'invoice-form-page');
+            document.getElementById('sidebar-nav').classList.toggle('hidden', !isInside);
+            document.getElementById('logout-btn').classList.toggle('hidden', !isInside);
+        }
+        function performSearch() {
+        let query = document.getElementById('service-search').value.toLowerCase();
+        let menuItems = document.querySelectorAll('.sidebar li');
+
+        let found = false;
+        menuItems.forEach(item => {
+        item.style.background = "";
+        item.style.color = "";
+        if (query && item.innerText.toLowerCase().includes(query)) {
+            item.style.background = "#eef6ff";
+            item.style.color = "var(--portal-blue)";
+            item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            found = true;
+        }
+        });
+
+        if (!found && query) {
+        alert("No service found for: " + query);
+         }
+         }
+
+        // Optional: Press Enter to search
+        document.getElementById('service-search').addEventListener('keypress', function(e){
+        if(e.key === 'Enter') performSearch();
+        });
+
+
+        function selectRole(role) {
+            selectedRole = role;
+            document.getElementById('reg-heading').innerText = "Register as " + role;
+            showPage('register-page');
+        }
+
+        function completeRegistration() {
+            // Transfer registration data to dashboard view
+                document.getElementById('dash-title').innerText = selectedRole + " Dashboard";
+                document.getElementById('view-name').innerText = document.getElementById('reg_name').value;
+                document.getElementById('view-id').innerText = document.getElementById('reg_id').value;
+                document.getElementById('view-loc').innerText = document.getElementById('reg_loc').value;
+    
+        // Add this to show the validated email in the dashboard
+        console.log("Registered with: " + document.getElementById('reg_email').value);
+    
+        showPage('dashboard-page');
+        }
+
+         function calculateGst() {
+        let taxable = parseFloat(document.getElementById('inv_taxable').value) || 0;
+
+        if (taxable < 200000) {
+        // Below 2 lakhs → No GST
+        document.getElementById('inv_gst').value = 0;
+        document.getElementById('inv_total').value = taxable.toFixed(2);
+        document.getElementById('inv_status').value = "INACTIVE";
+        } 
+        else {
+        // 2 lakhs and above → 18% GST
+        let gst = taxable * 0.18;
+        let total = taxable + gst;
+
+        document.getElementById('inv_gst').value = gst.toFixed(2);
+        document.getElementById('inv_total').value = total.toFixed(2);
+        document.getElementById('inv_status').value = "ACTIVE";
+        }
+        }
+
+        
+        async function postInvoice() {
+        const payload = {
+        seller_gstin: document.getElementById('inv_s_gstin').value,
+        buyer_gstin: document.getElementById('inv_b_gstin').value,
+        invoice_number: document.getElementById('inv_num').value,
+        invoice_date: document.getElementById('inv_date').value,
+        taxable_value: document.getElementById('inv_taxable').value,
+        gst_value: document.getElementById('inv_gst').value,
+        total_value: document.getElementById('inv_total').value,
+        status: document.getElementById('inv_status').value
+        };
+        
+        function postInvoice(){
+           alert("Button clicked");
+            }
+        try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+            });
+
+        if (!response.ok) {
+            const err = await response.text();
+            alert("Backend error: " + err);
+            return;
+             }
+
+        alert("Invoice saved in backend!");
+        showPage('dashboard-page');
+
+        } 
+        catch (error) {
+        alert("Fetch error: " + error);
+        console.log(error);
+         }
+}
+
+
+        function updateMetrics(data) {
+            let currentCount = parseInt(document.getElementById('stat-count').innerText);
+            document.getElementById('stat-count').innerText = currentCount + 1;
+            document.getElementById('stat-total').innerText = "₹ " + data.total_value;
+            document.getElementById('stat-gst').innerText = "₹ " + data.gst_value;
+        }
+    </Script>
+</body>
+</html>

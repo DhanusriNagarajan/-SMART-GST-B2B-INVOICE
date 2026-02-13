@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST B2B INVOICE PORTAL</title>
+    <style>
+        :root {
+            --portal-blue: #003366;
+            --accent-blue: #00a8ff;
+            --light-bg: #f4f7f6;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--light-bg); color: #333; }
+        
+        /* HEADER (Image 1 Style) */
+        header { background-color: var(--portal-blue); color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; }
+        .nav-btns button { background: transparent; color: white; border: 1px solid white; padding: 8px 15px; cursor: pointer; border-radius: 4px; margin-left: 10px; }
+        .nav-btns button:hover { background: white; color: var(--portal-blue); }
+
+        .container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        
+        /* PAGE 1: HOME/ROLE SELECTION */
+        .role-box { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
+        .role-card { border: 2px solid #ddd; padding: 30px; border-radius: 8px; cursor: pointer; width: 150px; text-align: center; transition: 0.3s; }
+        .role-card:hover { border-color: var(--accent-blue); background: #e1f5fe; }
+        .role-card i { font-size: 40px; display: block; margin-bottom: 10px; }
+
+        /* FORM STYLING (Image 2 Style) */
+        h2 { color: var(--portal-blue); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .form-group label { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        .form-group input { padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        .btn-submit { background: #337ab7; color: white; border: none; padding: 12px 25px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
+        .btn-submit:hover { background: #285e8e; }
+
+        /* DASHBOARD */
+        .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .card { padding: 20px; border-radius: 6px; color: white; text-align: center; }
+        .blue { background: #34495e; } .orange { background: #e67e22; } .green { background: #27ae60; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1 style="margin:0; font-size: 22px;">GST B2B INVOICE</h1>
+            <small>Official Registration & Filing Portal</small>
+        </div>
+        <div class="nav-btns">
+            <button onclick="showPage('home')">Home</button>
+            <button onclick="showPage('login')">Login</button>
+        </div>
+    </header>
+
+    <div id="home" class="container">
+        <h2 style="text-align:center">Registration Portal</h2>
+        <p style="text-align:center">Please select your primary role to continue registration</p>
+        <div class="role-box">
+            <div class="role-card" onclick="startRegistration('Seller')">
+                <span>🏢</span><br><strong>SELLER</strong>
+            </div>
+            <div class="role-card" onclick="startRegistration('Buyer')">
+                <span>🛒</span><br><strong>BUYER</strong>
+            </div>
+        </div>
+    </div>
+
+    <div id="register-form" class="container hidden">
+        <h2 id="reg-title">Register as Seller</h2>
+        <div class="form-group">
+            <label id="name-label">Seller Name</label>
+            <input type="text" id="reg_name" placeholder="Enter Full Name">
+        </div>
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="reg_email" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+            <label>ID Number (GSTIN/PAN)</label>
+            <input type="text" id="reg_id" placeholder="Enter Identification Number">
+        </div>
+        <div class="form-group">
+            <label>Location of Shop/Office</label>
+            <input type="text" id="reg_loc" placeholder="City, State, Pincode">
+        </div>
+        <button class="btn-submit" onclick="submitRegistration()">Complete Registration</button>
+        <p style="text-align:center; font-size:12px; color:gray; cursor:pointer" onclick="showPage('home')">← Back to selection</p>
+    </div>
+
+    <div id="dashboard" class="container hidden">
+        <h2 id="dash-welcome">Welcome!</h2>
+        <div class="dash-grid">
+            <div class="card blue"><small>Active Invoices</small><h2>04</h2></div>
+            <div class="card orange"><small>Pending Tax</small><h2>₹ 12,450</h2></div>
+            <div class="card green"><small>Status</small><h2>Verified</h2></div>
+        </div>
+        <hr style="margin:30px 0">
+        <h3>User Profile Details</h3>
+        <p><strong>Role:</strong> <span id="view-role"></span></p>
+        <p><strong>ID:</strong> <span id="view-id"></span></p>
+        <p><strong>Location:</strong> <span id="view-loc"></span></p>
+        <button class="btn-submit" style="background:#888" onclick="showPage('home')">Logout</button>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000/api/invoices/"; // Your backend path
+        let selectedRole = "";
+
+        function showPage(id) {
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function startRegistration(role) {
+            selectedRole = role;
+            document.getElementById('reg-title').innerText = "Register as " + role;
+            document.getElementById('name-label').innerText = role + " Name";
+            showPage('register-form');
+        }
+
+        async function submitRegistration() {
+            const formData = {
+                role: selectedRole,
+                name: document.getElementById('reg_name').value,
+                email: document.getElementById('reg_email').value,
+                id_number: document.getElementById('reg_id').value,
+                location: document.getElementById('reg_loc').value
+            };
+
+            // Validating inputs
+            if(!formData.name || !formData.id_number) {
+                alert("Please fill in Name and ID Number.");
+                return;
+            }
+
+            try {
+                // Sending to your backend path
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if(response.ok) {
+                    alert("Registration Successful for " + selectedRole);
+                    updateDashboardUI(formData);
+                    showPage('dashboard');
+                } else {
+                    // Simulating success for local testing if backend isn't live yet
+                    console.log("Backend offline, simulating transition...");
+                    updateDashboardUI(formData);
+                    showPage('dashboard');
+                }
+            } catch (err) {
+                console.error("Connection error:", err);
+                // Fallback for demo
+                updateDashboardUI(formData);
+                showPage('dashboard');
+            }
+        }
+
+        function updateDashboardUI(data) {
+            document.getElementById('dash-welcome').innerText = "Welcome, " + data.name;
+            document.getElementById('view-role').innerText = data.role;
+            document.getElementById('view-id').innerText = data.id_number;
+            document.getElementById('view-loc').innerText = data.location;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST B2B INVOICE PORTAL</title>
+
+    <style>
+        :root {
+            --portal-blue: #003366;
+            --accent-blue: #00a8ff;
+            --sidebar-bg: #ffffff;
+            --main-bg: #f0f2f5;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--main-bg); color: #333; }
+        
+        /* HEADER STYLE */
+        header { 
+            background-color: var(--portal-blue); 
+            color: white; 
+            padding: 15px 5%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .header-title h1 { margin: 0; font-size: 20px; }
+        
+        .search-wrapper { display: flex; background: white; border-radius: 4px; overflow: hidden; width: 300px; }
+        #service-search { border: none; padding: 8px; flex: 1; outline: none; }
+        .search-btn { background: var(--accent-blue); border: none; color: white; padding: 0 10px; cursor: pointer; }
+
+        .nav-links button { 
+            background: transparent; color: white; border: 1px solid white; 
+            padding: 6px 15px; border-radius: 4px; cursor: pointer; margin-left: 10px;
+        }
+
+        .wrapper { display:flex; min-height:90vh; }
+        .sidebar { width:260px; background:white; border-right:1px solid #ddd; padding:20px 0; }
+        .sidebar ul { list-style:none; padding:0; }
+        .sidebar li { padding:12px 25px; cursor:pointer; border-bottom:1px solid #f0f0f0; font-size: 14px; }
+        .sidebar li:hover { background: #eef6ff; }
+
+        .main-content { flex-grow:1; padding:40px; display:flex; justify-content:center; }
+        .page-container { background:white; padding:30px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); width:100%; max-width:800px; }
+        .hidden { display:none; }
+
+        /* DASHBOARD CARDS */
+        .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .card { background: white; padding: 20px; border-radius: 8px; text-align: center; border-top: 4px solid var(--portal-blue); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .card h3 { margin: 10px 0; color: var(--portal-blue); }
+
+        /* FORM STYLING */
+        .form-row { display: flex; margin-bottom: 15px; align-items: center; }
+        .form-row label { width: 200px; font-weight: 600; font-size: 14px; }
+        .form-row input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-action { background: #337ab7; color: white; border: none; padding: 12px 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-post { float: right; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <h1>GST B2B INVOICE</h1>
+            <small>Government Services Portal</small>
+        </div>
+        <div class="search-wrapper">
+            <input type="text" id="service-search" placeholder="Search services...">
+            <button class="search-btn" onclick="performSearch()">🔍</button>
+        </div>
+        <div class="nav-links">
+            <button onclick="location.reload()">Home</button>
+            <button id="logout-btn" class="hidden" onclick="location.reload()">Logout</button>
+        </div>
+    </header>
+
+    <div class="wrapper">
+        <aside id="sidebar-nav" class="sidebar hidden">
+            <div style="padding: 0 25px 10px; font-size: 12px; color: #888; font-weight: bold;">SERVICES</div>
+            <ul id="menuList">
+                <li onclick="showPage('dashboard-page')">Dashboard</li>
+                <li onclick="showPage('invoice-form-page')">Create New Invoice</li>
+                <li>Money and Taxes</li>
+                <li>Download Reports</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+
+            <div id="home-page" class="page-container" style="text-align: center;">
+                <h2>Welcome to GST Portal</h2>
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+                    <div onclick="selectRole('Seller')" style="border: 2px solid #ddd; padding: 30px; border-radius: 10px; cursor: pointer; width: 120px;">🏢<strong>SELLER</strong></div>
+                    <div onclick="selectRole('Buyer')" style="border: 2px solid #ddd; padding: 30px; border-radius: 10px; cursor: pointer; width: 120px;">🛒<strong>BUYER</strong></div>
+                </div>
+            </div>
+
+            <div id="register-page" class="page-container hidden">
+                <h2 id="reg-heading">Register</h2>
+                <div class="form-row">
+                    <label>Full Name</label>
+                    <input type="text" id="reg_name" placeholder="No numbers or symbols">
+                </div>
+                <div class="form-row">
+                    <label>Email Address</label>
+                    <input type="email" id="reg_email" placeholder="No uppercase, @gmail.com only">
+                </div>
+                <div class="form-row">
+                    <label>ID Number</label>
+                    <input type="text" id="reg_id">
+                </div>
+                <div class="form-row">
+                    <label>Shop/Office Location</label>
+                    <input type="text" id="reg_loc">
+                </div>
+                <button class="btn-action" style="width: 100%;" onclick="completeRegistration()">Complete Registration & Login</button>
+            </div>
+
+            <div id="invoice-form-page" class="page-container hidden">
+                <h3 style="color:#337ab7; margin-top:0;">New B2B Invoice Entry</h3>
+                <hr style="margin-bottom: 20px; border: 0; border-top: 1px solid #eee;">
+                <div class="form-row"><label>Seller GSTIN (Numbers only)</label><input type="text" id="inv_s_gstin"></div>
+                <div class="form-row"><label>Buyer GSTIN (Numbers only)</label><input type="text" id="inv_b_gstin"></div>
+                <div class="form-row"><label>Invoice Number (Numbers only)</label><input type="text" id="inv_num"></div>
+                <div class="form-row"><label>Invoice Date</label><input type="date" id="inv_date"></div>
+                <div class="form-row"><label>Taxable Value</label><input type="number" id="inv_taxable" oninput="calculateGst()"></div>
+                <div class="form-row"><label>Gst Value (18%)</label><input type="number" id="inv_gst" readonly style="background:#f9f9f9;"></div>
+                <div class="form-row"><label>Total Value</label><input type="number" id="inv_total" readonly style="background:#f9f9f9;"></div>
+                <div class="form-row"><label>Status</label><input type="text" id="inv_status" readonly></div>
+                <button class="btn-action btn-post" onclick="postInvoice()">POST</button>
+            </div>
+
+            <div id="dashboard-page" class="page-container hidden">
+                <h2 id="dash-title">Dashboard</h2>
+                <div class="dash-grid">
+                    <div class="card"><p>Total Invoices</p><h3 id="stat-count">0</h3></div>
+                    <div class="card" style="border-top-color: #27ae60;"><p>Total Value</p><h3 id="stat-total">₹ 0.00</h3></div>
+                    <div class="card" style="border-top-color: #e67e22;"><p>GST Value</p><h3 id="stat-gst">₹ 0.00</h3></div>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid var(--portal-blue);">
+                    <h4 style="margin: 0 0 10px;">User Profile</h4>
+                    <p><strong>Name:</strong> <span id="view-name"></span></p>
+                    <p><strong>Email:</strong> <span id="view-email"></span></p>
+                    <p><strong>Location:</strong> <span id="view-loc"></span></p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000/api/invoices/";
+        let selectedRole = "";
+
+        // #################### 1. CUSTOM VALIDATION LOGIC ####################
+
+        // Name: Remove anything that isn't a letter or space
+        document.getElementById('reg_name').addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        });
+
+        // Email: Force lowercase instantly
+        document.getElementById('reg_email').addEventListener('input', function() {
+            this.value = this.value.toLowerCase();
+        });
+
+        // Email: Check @gmail.com suffix when user leaves the field
+        document.getElementById('reg_email').addEventListener('blur', function() {
+            if (this.value && !this.value.endsWith('@gmail.com')) {
+                alert("Email must end with @gmail.com");
+                this.value = ""; // Clear the field
+            }
+        });
+
+        // Numbers only: Seller GSTIN, Buyer GSTIN, and Invoice Number
+        ['inv_s_gstin', 'inv_b_gstin', 'inv_num'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        });
+
+        // #################### 2. NAVIGATION LOGIC ####################
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-container').forEach(p => p.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+            const isInside = (pageId === 'dashboard-page' || pageId === 'invoice-form-page');
+            document.getElementById('sidebar-nav').classList.toggle('hidden', !isInside);
+            document.getElementById('logout-btn').classList.toggle('hidden', !isInside);
+        }
+
+        function selectRole(role) {
+            selectedRole = role;
+            document.getElementById('reg-heading').innerText = "Register as " + role;
+            showPage('register-page');
+        }
+
+        function completeRegistration() {
+            const name = document.getElementById('reg_name').value;
+            const email = document.getElementById('reg_email').value;
+            if(!name || !email) {
+                alert("Please provide a valid Name and Gmail.");
+                return;
+            }
+            document.getElementById('dash-title').innerText = selectedRole + " Dashboard";
+            document.getElementById('view-name').innerText = name;
+            document.getElementById('view-email').innerText = email;
+            document.getElementById('view-loc').innerText = document.getElementById('reg_loc').value;
+            showPage('dashboard-page');
+        }
+
+        // #################### 3. CALCULATION & API LOGIC ####################
+
+        function calculateGst() {
+            let taxable = parseFloat(document.getElementById('inv_taxable').value) || 0;
+            if (taxable < 200000) {
+                document.getElementById('inv_gst').value = 0;
+                document.getElementById('inv_total').value = taxable.toFixed(2);
+                document.getElementById('inv_status').value = "INACTIVE";
+            } else {
+                let gst = taxable * 0.18;
+                document.getElementById('inv_gst').value = gst.toFixed(2);
+                document.getElementById('inv_total').value = (taxable + gst).toFixed(2);
+                document.getElementById('inv_status').value = "ACTIVE";
+            }
+        }
+
+        async function postInvoice() {
+            const payload = {
+                seller_gstin: document.getElementById('inv_s_gstin').value,
+                buyer_gstin: document.getElementById('inv_b_gstin').value,
+                invoice_number: document.getElementById('inv_num').value,
+                invoice_date: document.getElementById('inv_date').value,
+                taxable_value: document.getElementById('inv_taxable').value,
+                gst_value: document.getElementById('inv_gst').value,
+                total_value: document.getElementById('inv_total').value,
+                status: document.getElementById('inv_status').value
+            };
+
+            // Double check validation before the fetch
+            if(!payload.seller_gstin || !payload.buyer_gstin || !payload.invoice_number) {
+                alert("GSTINs and Invoice Number must contain digits only.");
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert("Invoice Saved Successfully!");
+                    updateMetrics(payload);
+                    showPage('dashboard-page');
+                } else {
+                    const err = await response.text();
+                    alert("Backend error: " + err);
+                }
+            } catch (error) {
+                alert("Fetch error: Backend not responding.");
+            }
+        }
+
+        function updateMetrics(data) {
+            let count = parseInt(document.getElementById('stat-count').innerText);
+            document.getElementById('stat-count').innerText = count + 1;
+            document.getElementById('stat-total').innerText = "₹ " + data.total_value;
+            document.getElementById('stat-gst').innerText = "₹ " + data.gst_value;
+        }
+
+        function performSearch() {
+            let query = document.getElementById('service-search').value.toLowerCase();
+            let items = document.querySelectorAll('.sidebar li');
+            items.forEach(i => {
+                i.style.background = (query && i.innerText.toLowerCase().includes(query)) ? "#eef6ff" : "";
+            });
+        }
+    </script>
+</body>
+</html>

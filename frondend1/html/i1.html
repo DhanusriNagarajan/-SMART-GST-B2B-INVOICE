@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice App</title>
+</head>
+<body>
+
+<h2>Create Invoice</h2>
+
+<input id="seller" placeholder="Seller GSTIN"><br><br>
+<input id="buyer" placeholder="Buyer GSTIN"><br><br>
+<input id="invno" placeholder="Invoice Number"><br><br>
+<input id="date" type="date"><br><br>
+<input id="taxable" placeholder="Taxable Value"><br><br>
+<input id="gst" placeholder="GST Value"><br><br>
+<input id="total" placeholder="Total Value"><br><br>
+
+<button onclick="saveInvoice()">Save Invoice</button>
+
+<h2>Invoice List</h2>
+<button onclick="loadInvoices()">Load Invoices</button>
+
+<ul id="list"></ul>
+
+<script>
+
+const API_URL = "http://127.0.0.1:8000/api/invoices/";
+
+// REGISTER (temporary demo)
+async function registerUser() {
+    alert("Register connected (backend later add pannalam)");
+}
+
+// LOGIN (temporary demo)
+async function loginUser() {
+    alert("Login connected (backend later add pannalam)");
+}
+
+// SAVE INVOICE
+async function saveInvoice(data) {
+    const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+    console.log(result);
+    alert("Invoice Saved");
+}
+
+// LOAD INVOICE LIST
+async function loadInvoices() {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    console.log(data);
+}
+
+function showView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    lucide.createIcons();
+    window.scrollTo(0, 0);
+}
+
+lucide.createIcons();
+
+</script>
+
+</body>
+</html>
