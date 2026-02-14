@@ -78,15 +78,26 @@
                 </div>
             </div>
 
-            <div id="register-page" class="page-container hidden">
+             <div id="register-page" class="page-container hidden">
                 <h2 id="reg-heading">Register</h2>
-                <div class="form-row"><label>Full Name</label><input type="text" id="reg_name" placeholder="Letters only"></div>
-                <div class="form-row"><label>Email Address</label><input type="email" id="reg_email" placeholder="lowercase @gmail.com"></div>
-                <div class="form-row"><label>ID Number</label><input type="text" id="reg_id"></div>
-                <div class="form-row"><label>Location</label><input type="text" id="reg_loc"></div>
+                <div class="form-row">
+                    <label>Full Name</label>
+                    <input type="text" id="reg_name" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="Letters only">
+                </div>
+                <div class="form-row">
+                    <label>Email Address</label>
+                    <input type="email" id="reg_email" oninput="this.value = this.value.toLowerCase()" onblur="if(this.value && !this.value.endsWith('@gmail.com')){ alert('Only @gmail.com allowed'); this.value=''; }" placeholder="lowercase @gmail.com">
+                </div>
+                <div class="form-row">
+                    <label>ID Number (Digits only)</label>
+                    <input type="text" id="reg_id" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+                <div class="form-row">
+                    <label>Shop/Office Location</label>
+                    <input type="text" id="reg_loc">
+                </div>
                 <button class="btn-action" style="width: 100%;" onclick="completeRegistration()">Complete Registration & Login</button>
             </div>
-
             <div id="invoice-form-page" class="page-container hidden">
                 <h3 style="color:#337ab7; margin-top:0;">New Invoice Entry</h3>
                 <hr>
