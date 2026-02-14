@@ -20,7 +20,10 @@
         .wrapper { display:flex; min-height:90vh; }
         .sidebar { width:260px; background:white; border-right:1px solid #ddd; padding:20px 0; }
         .sidebar ul { list-style:none; padding:0; }
-        .sidebar li { padding:12px 25px; cursor:pointer; border-bottom:1px solid #f0f0f0; }
+        .sidebar li { padding:12px 25px; cursor:pointer; border-bottom:1px solid #f0f0f0;<li onclick="showPage('dashboard-page')">Dashboard</li>
+                    <li onclick="showPage('invoice-form-page')">Create New Invoice</li>
+                    <li onclick="showPage('taxes-page')">Money and Taxes</li>
+                    <li onclick="showPage('reports-page')">Download Reports</li> }
         .main-content { flex-grow:1; padding:40px; display:flex; justify-content:center; }
         .page-container { background:white; padding:30px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); width:100%; max-width:800px; }
         .hidden { display:none; }
@@ -33,6 +36,7 @@
         .btn-action { background: #337ab7; color: white; border: none; padding: 12px 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-post { float: right; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -53,9 +57,10 @@
             <ul id="menuList">
                 <li onclick="showPage('dashboard-page')">Dashboard</li>
                 <li onclick="showPage('invoice-form-page')">Create New Invoice</li>
-                <li>Money and Taxes</li>
-                <li>Download Reports</li>
-            </ul>
+                <li onclick="showPage('taxes-page')">Money and Taxes</li>
+                <li onclick="showPage('reports-page')">Download Reports</li>
+           </ul>
+            
         </aside>
 
         <main class="main-content">
@@ -121,18 +126,81 @@
             </div>
         </main>
     </div>
+    <div id="taxes-page" class="page-container hidden">
+    <h2 style="color: var(--portal-blue);">Financial Overview</h2>
+    <div style="width: 100%; max-width: 500px; margin: 0 auto;">
+        <canvas id="taxChart"></canvas>
+    </div>
+</div>
+
+<div id="reports-page" class="page-container hidden" style="text-align: center;">
+    <h2 style="color: var(--portal-blue);">Download Reports</h2>
+    <div style="padding: 40px; border: 2px dashed #ccc; border-radius: 8px; background: #fafafa;">
+        <span style="font-size: 60px;">📄</span>
+        <h3>Invoice_Report_2026.pdf</h3>
+        <p>Your latest tax summary is ready for download.</p>
+        <button class="btn-action" onclick="downloadInvoiceReport()">Download Now (CSV)</button>
+        
+    </div>
+</div>
 
     <script>
         const API_URL = "http://127.0.0.1:8000/api/invoices/";
         let selectedRole = "";
 
+        
+
         function showPage(pageId) {
             document.querySelectorAll('.page-container').forEach(p => p.classList.add('hidden'));
             document.getElementById(pageId).classList.remove('hidden');
-            const isInside = (pageId === 'dashboard-page' || pageId === 'invoice-form-page');
+            // Logic to show/hide sidebar and logout
+        const isInside = (pageId !== 'home-page' && pageId !== 'register-page');
             document.getElementById('sidebar-nav').classList.toggle('hidden', !isInside);
             document.getElementById('logout-btn').classList.toggle('hidden', !isInside);
+
+    // If opening the taxes page, render the chart
+        if (pageId === 'taxes-page') {
+            renderTaxChart();
+    }
+}
+
+       function renderTaxChart() {
+    const ctx = document.getElementById('taxChart').getContext('2d');
+    
+    const totalVal = parseFloat(document.getElementById('stat-total').innerText.replace('₹ ', '')) || 0;
+    const gstVal = parseFloat(document.getElementById('stat-gst').innerText.replace('₹ ', '')) || 0;
+    const netValue = totalVal - gstVal;
+
+    if (myChart) { myChart.destroy(); }
+
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Financial Breakdown'],
+            datasets: [
+                {
+                    label: 'Net Revenue (Excl. Tax)',
+                    data: [netValue],
+                    backgroundColor: '#337ab7'
+                },
+                {
+                    label: 'GST Collected',
+                    data: [gstVal],
+                    backgroundColor: '#e67e22'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            },
+            plugins: {
+                title: { display: true, text: 'Tax vs Revenue Comparison' }
+            }
         }
+    });
+}
 
         function selectRole(role) {
             selectedRole = role;
@@ -199,6 +267,32 @@
             document.getElementById('stat-total').innerText = "₹ " + data.total_value;
             document.getElementById('stat-gst').innerText = "₹ " + data.gst_value;
         }
+        function downloadInvoiceReport() {
+    // Collect data from the UI
+    const name = document.getElementById('view-name').innerText;
+    const total = document.getElementById('stat-total').innerText;
+    const gst = document.getElementById('stat-gst').innerText;
+    const count = document.getElementById('stat-count').innerText;
+
+    // Create CSV content
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Report Detail,Value\n"; // Headers
+    csvContent += `User Name,${name}\n`;
+    csvContent += `Total Invoices,${count}\n`;
+    csvContent += `Total Value,${total.replace('₹ ', '')}\n`;
+    csvContent += `Total GST,${gst.replace('₹ ', '')}\n`;
+
+    // Create a hidden link and "click" it to trigger download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `GST_Report_${name}.csv`);
+    document.body.appendChild(link);
+
+    link.click();
+    document.body.removeChild(link);
+}
     </script>
 </body>
+
 </html>
